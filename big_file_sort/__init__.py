@@ -27,7 +27,7 @@ def file_chunk_lines(f, chunk_size=65536):
             yield line
 
 
-def break_into_temp_files(input_file, key, temp_file_location, temp_file_size):
+def break_into_temp_files(input_file, key, temp_file_location, temp_file_size, reverse = False):
     """
     Given an input file
     1. Break it into parts of size indicated by temp_file_size
@@ -45,6 +45,8 @@ def break_into_temp_files(input_file, key, temp_file_location, temp_file_size):
         :type temp_file_location: str
         :param temp_file_size: Size of each temporary file
         :type temp_file_size: int
+        :param reverse: Sort order reverse
+        :type reverse: bool
 
         :return: List of all temporary filenames created by this method
         :rtype: list
@@ -57,7 +59,7 @@ def break_into_temp_files(input_file, key, temp_file_location, temp_file_size):
             input_file.close()
             input_file = None
 
-        lines.sort(key=key)
+        lines.sort(key=key, reverse=reverse)
 
         fd, filename = tempfile.mkstemp(dir=temp_file_location)
         tf = os.fdopen(fd, 'w')
@@ -69,7 +71,7 @@ def break_into_temp_files(input_file, key, temp_file_location, temp_file_size):
 
 
 def sort_file(input_filename, output_filename, key=None, temp_file_location='/tmp/large_sorted_fragments',
-                 temp_file_size=1048576, buffer_size=1048576):
+                 temp_file_size=1048576, buffer_size=1048576, reverse=False):
     """
     Given input_filename which indicates a file of arbitrary size
     Write the same data to output_file with lines sorted by key_function
@@ -100,7 +102,7 @@ def sort_file(input_filename, output_filename, key=None, temp_file_location='/tm
             # If this is another exception, we will fail very soon.
             pass
 
-        temp_filenames = break_into_temp_files(input_file, key, temp_file_location, temp_file_size)
+        temp_filenames = break_into_temp_files(input_file, key, temp_file_location, temp_file_size, reverse)
 
         with open(output_filename, 'w', buffer_size) as out_file:
             temp_files = [open(filename) for filename in temp_filenames]
